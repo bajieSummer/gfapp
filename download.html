@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>安全下载中心 | 验证后可见</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>安全下载中心 | 竖排资源列表</title>
     <style>
         * {
             margin: 0;
@@ -12,205 +12,231 @@
         }
 
         body {
-            background: linear-gradient(135deg, #f0f4fa 0%, #e3e9f0 100%);
-            font-family: 'Inter', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(145deg, #f4f8fe 0%, #e9eff5 100%);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             min-height: 100vh;
-            padding: 2rem 1.5rem;
+            padding: 1.5rem 1rem;
             color: #1a2c3a;
-            position: relative;
         }
 
         /* 主容器 */
         .container {
-            max-width: 1100px;
+            max-width: 780px;
             margin: 0 auto;
         }
 
         /* 头部 */
         .page-header {
             text-align: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
+            padding: 0 0.5rem;
         }
 
         .page-header h1 {
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 700;
             background: linear-gradient(120deg, #1e4663, #2b7551);
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
-            letter-spacing: -0.3px;
+            letter-spacing: -0.2px;
         }
 
         .page-header p {
             color: #4a627a;
-            margin-top: 0.5rem;
-            font-size: 1rem;
-            border-bottom: 2px solid #cbdde9;
+            font-size: 0.9rem;
+            margin-top: 0.4rem;
+            border-bottom: 2px solid rgba(43, 117, 81, 0.2);
             display: inline-block;
-            padding-bottom: 0.4rem;
+            padding-bottom: 0.3rem;
         }
 
-        /* 下载网格区域（初始隐藏，验证通过后显示） */
-        .download-grid {
-            display: none;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 1rem;
-        }
-
-        .download-grid.active {
-            display: grid;
-        }
-
-        /* 卡片样式 */
-        .card {
-            background: white;
-            border-radius: 1.75rem;
-            box-shadow: 0 15px 30px -12px rgba(0, 0, 0, 0.1);
-            transition: all 0.25s ease;
-            overflow: hidden;
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            display: flex;
+        /* 下载列表容器 - 竖排可滑动区域 */
+        .download-list {
+            display: none; /* 初始隐藏，验证后显示 */
             flex-direction: column;
+            gap: 1.25rem;
+            max-height: 70vh;           /* 限制高度，超出滚动，移动端更友好 */
+            overflow-y: auto;
+            padding: 0.25rem 0.25rem 0.5rem 0.25rem;
+            border-radius: 1.5rem;
         }
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 25px 40px -15px rgba(0, 0, 0, 0.2);
-            border-color: #cfdfd2;
+        .download-list.active {
+            display: flex;
         }
 
-        .card-content {
-            padding: 1.8rem 1.8rem 1rem 1.8rem;
-            flex: 1;
+        /* 自定义滚动条 (适配移动/桌面) */
+        .download-list::-webkit-scrollbar {
+            width: 5px;
+        }
+        .download-list::-webkit-scrollbar-track {
+            background: #e0e9ef;
+            border-radius: 10px;
+        }
+        .download-list::-webkit-scrollbar-thumb {
+            background: #7eae94;
+            border-radius: 10px;
         }
 
-        .file-badge {
-            display: inline-flex;
+        /* 竖排卡片样式 - 类似现代列表项 */
+        .list-item {
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(2px);
+            border-radius: 1.5rem;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s ease;
+            border: 1px solid rgba(207, 223, 210, 0.5);
+            display: flex;
+            flex-wrap: wrap;
             align-items: center;
-            gap: 0.4rem;
-            background: #eef2f6;
-            padding: 0.25rem 0.8rem;
-            border-radius: 30px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #2d5f45;
-            margin-bottom: 1rem;
+            justify-content: space-between;
+            padding: 1rem 1.2rem;
+            gap: 1rem;
         }
 
-        .card-title {
-            font-size: 1.6rem;
+        .list-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 22px -8px rgba(0, 0, 0, 0.12);
+            border-color: #c2dbc9;
+            background: white;
+        }
+
+        /* 左侧信息区 */
+        .item-info {
+            flex: 3;
+            min-width: 160px;
+        }
+
+        .title-row {
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .item-title {
+            font-size: 1.3rem;
             font-weight: 700;
-            margin-bottom: 0.75rem;
-            color: #1f3b4a;
+            color: #1e3b2f;
+            letter-spacing: -0.2px;
             line-height: 1.3;
         }
 
-        .description {
-            color: #3e5a6b;
-            font-size: 0.95rem;
+        .file-badge-sm {
+            background: #e9f3ee;
+            padding: 0.2rem 0.7rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #2b7551;
+            display: inline-block;
+        }
+
+        .item-description {
+            font-size: 0.85rem;
+            color: #4d6a7e;
             line-height: 1.4;
-            margin: 0.6rem 0 1rem 0;
-            border-left: 3px solid #40916c;
-            padding-left: 0.9rem;
-            background: #fafefb;
-            border-radius: 0 10px 10px 0;
+            margin: 0.3rem 0 0.4rem 0;
+            padding-right: 0.5rem;
+            border-left: 3px solid #6fbc8c;
+            padding-left: 0.6rem;
+            background: #fcfef9;
+            border-radius: 0 12px 12px 0;
         }
 
-        .file-meta {
+        .meta-info {
             display: flex;
-            gap: 1rem;
-            align-items: center;
-            font-size: 0.8rem;
-            color: #50755b;
-            background: #f3f8f0;
-            padding: 0.5rem 0.8rem;
-            border-radius: 1rem;
-            margin-top: 1rem;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            font-size: 0.7rem;
             font-weight: 500;
+            color: #628473;
+            margin-top: 0.35rem;
         }
 
-        .file-meta span {
+        .meta-info span {
             display: inline-flex;
             align-items: center;
-            gap: 0.25rem;
+            gap: 0.2rem;
+            background: #f1f7f2;
+            padding: 0.2rem 0.6rem;
+            border-radius: 30px;
         }
 
-        .download-area {
-            padding: 0.2rem 1.8rem 1.8rem 1.8rem;
+        /* 下载按钮区域 */
+        .download-action {
+            flex-shrink: 0;
         }
 
-        .download-btn {
-            display: flex;
+        .download-link {
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
-            gap: 0.6rem;
-            background: white;
-            border: 2px solid #cfe4d6;
-            border-radius: 60px;
-            padding: 0.8rem 1rem;
-            font-weight: 700;
-            font-size: 1rem;
-            color: #236e4a;
+            gap: 0.5rem;
+            background: #2b7551;
+            border: none;
+            border-radius: 2rem;
+            padding: 0.7rem 1.3rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: white;
             text-decoration: none;
             transition: 0.2s;
-            text-align: center;
-            width: 100%;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
 
-        .download-btn:hover {
-            background: #2b7551;
-            border-color: #2b7551;
-            color: white;
-            box-shadow: 0 8px 18px -6px rgba(43, 117, 81, 0.4);
-            transform: scale(1.02);
-        }
-
-        .download-btn:active {
+        .download-link:hover {
+            background: #1c5c3f;
             transform: scale(0.98);
+            box-shadow: 0 4px 12px rgba(43, 117, 81, 0.3);
         }
 
+        .download-icon {
+            font-size: 1rem;
+        }
+
+        /* 页面底部 */
         footer {
             text-align: center;
-            margin-top: 3rem;
-            padding-top: 1.5rem;
-            color: #6f8fa0;
-            font-size: 0.8rem;
-            border-top: 1px solid #cbdde9;
+            margin-top: 2rem;
+            font-size: 0.7rem;
+            color: #7f95a8;
+            border-top: 1px solid #d0e0d8;
+            padding-top: 1.2rem;
         }
 
-        /* 自定义弹窗 (模态框) 样式 */
+        /* 模态弹窗 */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(6px);
+            background-color: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(8px);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 1000;
-            transition: all 0.2s ease;
         }
 
         .modal-card {
             background: white;
-            max-width: 420px;
-            width: 90%;
+            max-width: 380px;
+            width: 85%;
             border-radius: 2rem;
-            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.3);
-            padding: 2rem 1.8rem 2rem 1.8rem;
+            padding: 1.8rem 1.5rem;
             text-align: center;
-            animation: fadeSlideUp 0.25s ease-out;
+            animation: fadeUp 0.25s ease;
+            box-shadow: 0 30px 45px rgba(0, 0, 0, 0.25);
         }
 
-        @keyframes fadeSlideUp {
+        @keyframes fadeUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(25px);
             }
             to {
                 opacity: 1;
@@ -220,47 +246,44 @@
 
         .modal-icon {
             font-size: 3rem;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.2rem;
         }
 
         .modal-card h3 {
-            font-size: 1.8rem;
+            font-size: 1.7rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
             background: linear-gradient(135deg, #1f4e6f, #2b7551);
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
+            margin-bottom: 0.3rem;
         }
 
         .modal-card p {
-            color: #5a6f82;
-            font-size: 0.9rem;
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid #e2edf2;
-            display: inline-block;
-            padding-bottom: 0.3rem;
+            color: #5d7184;
+            font-size: 0.85rem;
+            margin-bottom: 1.2rem;
         }
 
-        .input-group {
-            margin: 1.5rem 0 1rem;
+        .input-field {
+            margin: 1rem 0;
         }
 
-        .input-group input {
+        .input-field input {
             width: 100%;
-            padding: 0.9rem 1rem;
+            padding: 0.8rem 1rem;
             font-size: 1rem;
-            border: 2px solid #dce9f0;
-            border-radius: 60px;
-            outline: none;
-            transition: 0.2s;
+            border: 2px solid #dbeae2;
+            border-radius: 3rem;
+            text-align: center;
             font-family: monospace;
             letter-spacing: 1px;
-            text-align: center;
             background: #fefefe;
+            outline: none;
+            transition: 0.2s;
         }
 
-        .input-group input:focus {
+        .input-field input:focus {
             border-color: #2b7551;
             box-shadow: 0 0 0 3px rgba(43, 117, 81, 0.2);
         }
@@ -269,15 +292,14 @@
             background: #2b7551;
             color: white;
             border: none;
-            padding: 0.85rem 1.5rem;
             width: 100%;
-            border-radius: 60px;
-            font-size: 1rem;
+            padding: 0.8rem;
+            border-radius: 3rem;
             font-weight: 700;
+            font-size: 1rem;
             cursor: pointer;
             transition: 0.2s;
-            margin-top: 0.5rem;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            margin-top: 0.2rem;
         }
 
         .verify-btn:hover {
@@ -286,103 +308,158 @@
         }
 
         .error-msg {
-            color: #c7362b;
-            font-size: 0.8rem;
-            margin-top: 0.8rem;
-            background: #ffe9e7;
-            padding: 0.4rem;
-            border-radius: 40px;
-            display: inline-block;
-            width: 100%;
+            color: #c0392b;
+            font-size: 0.75rem;
+            margin-top: 0.7rem;
+            background: #ffe6e3;
+            padding: 0.3rem;
+            border-radius: 50px;
         }
 
         .hint-text {
-            margin-top: 1rem;
             font-size: 0.7rem;
-            background: #f0f5f2;
-            padding: 0.3rem;
+            background: #eef3ef;
             border-radius: 40px;
-            color: #2f6b4a;
+            padding: 0.3rem;
+            margin-top: 1rem;
+            color: #2c6e4f;
         }
 
-        /* 验证通过后移除滚动锁定 */
-        body.modal-open {
-            overflow: hidden;
+        /* 移动端适配 竖排更紧凑 */
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem;
+            }
+            .list-item {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 1rem;
+            }
+            .download-action {
+                align-self: flex-end;
+                margin-top: 0.2rem;
+            }
+            .download-link {
+                width: 100%;
+                justify-content: center;
+                padding: 0.7rem;
+            }
+            .item-title {
+                font-size: 1.2rem;
+            }
+            .meta-info {
+                font-size: 0.65rem;
+            }
+            .download-list {
+                max-height: 65vh;
+            }
+        }
+
+        /* 隐藏滚动条但保留功能（可选，更干净） */
+        .download-list {
+            scrollbar-width: thin;
         }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="page-header">
-        <h1>🔐 安全下载中心</h1>
-        <p>请通过验证后查看下载资源</p>
+        <h1>📂 资源下载中心</h1>
+        <p>验证后解锁 · 竖排列表 · 滚动查阅</p>
     </div>
 
-    <!-- 下载列表区域：初始隐藏，验证通过后显示 -->
-    <div id="downloadGrid" class="download-grid">
-        <!-- 卡片 1: 5MB 测试压缩包 -->
-        <div class="card">
-            <div class="card-content">
-                <div class="file-badge">
-                    📦 压缩包 · ZIP
+    <!-- 竖排下载列表容器，初始隐藏 -->
+    <div id="downloadList" class="download-list">
+        <!-- 项目1 - 5MB ZIP -->
+        <div class="list-item">
+            <div class="item-info">
+                <div class="title-row">
+                    <span class="item-title">性能测试样本包</span>
+                    <span class="file-badge-sm">ZIP</span>
                 </div>
-                <div class="card-title">性能测试样本包</div>
-                <div class="description">
-                    包含网络诊断与带宽测试数据，适合压测场景。
+                <div class="item-description">
+                    网络诊断与带宽压测数据，适合传输测试。
                 </div>
-                <div class="file-meta">
-                    <span>🔹 大小: 5 MB</span>
+                <div class="meta-info">
+                    <span>📦 大小: 5 MB</span>
                     <span>📁 格式: .zip</span>
+                    <span>⚡ 高速直链</span>
                 </div>
             </div>
-            <div class="download-area">
-                <a class="download-btn" href="http://ipv4.download.thinkbroadband.com/5MB.zip" download>
+            <div class="download-action">
+                <a class="download-link" href="http://ipv4.download.thinkbroadband.com/5MB.zip" download>
                     <span class="download-icon">⬇️</span>
                     <span>下载文件</span>
                 </a>
             </div>
         </div>
 
-        <!-- 卡片 2: 10MB 二进制测试文件 -->
-        <div class="card">
-            <div class="card-content">
-                <div class="file-badge">
-                    🧪 二进制数据 · BIN
+        <!-- 项目2 - 10MB BIN -->
+        <div class="list-item">
+            <div class="item-info">
+                <div class="title-row">
+                    <span class="item-title">大文件负载示例</span>
+                    <span class="file-badge-sm">BIN</span>
                 </div>
-                <div class="card-title">大文件负载示例</div>
-                <div class="description">
-                    10MB 随机填充数据，用于传输速度或存储测试。
+                <div class="item-description">
+                    10MB 随机填充数据，用于存储或速度测试。
                 </div>
-                <div class="file-meta">
-                    <span>🔹 大小: 10 MB</span>
+                <div class="meta-info">
+                    <span>🧪 大小: 10 MB</span>
                     <span>📁 格式: .bin</span>
+                    <span>🔁 断点续传支持</span>
                 </div>
             </div>
-            <div class="download-area">
-                <a class="download-btn" href="http://ipv4.download.thinkbroadband.com/10MB.bin" download>
+            <div class="download-action">
+                <a class="download-link" href="http://ipv4.download.thinkbroadband.com/10MB.bin" download>
                     <span class="download-icon">⬇️</span>
                     <span>下载文件</span>
                 </a>
             </div>
         </div>
 
-        <!-- 卡片 3: PDF 示例文档 -->
-        <div class="card">
-            <div class="card-content">
-                <div class="file-badge">
-                    📄 文档 · PDF
+        <!-- 项目3 - PDF 文档 -->
+        <div class="list-item">
+            <div class="item-info">
+                <div class="title-row">
+                    <span class="item-title">技术白皮书（草案）</span>
+                    <span class="file-badge-sm">PDF</span>
                 </div>
-                <div class="card-title">技术白皮书（草案）</div>
-                <div class="description">
-                    最新架构设计说明与性能测试报告，完整版共 28 页。
+                <div class="item-description">
+                    最新架构设计与性能报告，共计28页完整版。
                 </div>
-                <div class="file-meta">
-                    <span>🔹 大小: 1.4 MB</span>
+                <div class="meta-info">
+                    <span>📄 大小: 1.4 MB</span>
                     <span>📁 格式: .pdf</span>
+                    <span>🔒 公开预览版</span>
                 </div>
             </div>
-            <div class="download-area">
-                <a class="download-btn" href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" download>
+            <div class="download-action">
+                <a class="download-link" href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" download>
+                    <span class="download-icon">⬇️</span>
+                    <span>下载文件</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- 额外可选第四个示例（竖排可再多一项，满足2~3且有余）-->
+        <div class="list-item">
+            <div class="item-info">
+                <div class="title-row">
+                    <span class="item-title">软件镜像包(示例)</span>
+                    <span class="file-badge-sm">ISO</span>
+                </div>
+                <div class="item-description">
+                    模拟大型软件安装镜像，仅用于演示下载链接。
+                </div>
+                <div class="meta-info">
+                    <span>💽 大小: 15 MB</span>
+                    <span>📁 格式: .iso</span>
+                    <span>🌐 测试资源</span>
+                </div>
+            </div>
+            <div class="download-action">
+                <a class="download-link" href="http://ipv4.download.thinkbroadband.com/20MB.zip" download>
                     <span class="download-icon">⬇️</span>
                     <span>下载文件</span>
                 </a>
@@ -391,109 +468,98 @@
     </div>
 
     <footer>
-        ⚡ 所有资源均为正式大文件链接，点击即下载 | 需验证后可见
+        ✅ 通过验证后显示资源列表 | 竖排滑动体验 | 提示码: 123456
     </footer>
 </div>
 
 <script>
     (function() {
-        // 预设验证码
         const ACCESS_CODE = "123456";
-        // 下载网格元素
-        const gridContainer = document.getElementById("downloadGrid");
-        
-        // 创建弹窗结构
-        function createModal() {
-            const modalOverlay = document.createElement('div');
-            modalOverlay.className = 'modal-overlay';
-            modalOverlay.id = 'accessModal';
-            
-            modalOverlay.innerHTML = `
+        const listContainer = document.getElementById("downloadList");
+
+        // 创建模态弹窗（验证）
+        function createAccessModal() {
+            const modalDiv = document.createElement('div');
+            modalDiv.className = 'modal-overlay';
+            modalDiv.id = 'authModal';
+
+            modalDiv.innerHTML = `
                 <div class="modal-card">
-                    <div class="modal-icon">🔒</div>
+                    <div class="modal-icon">🔐</div>
                     <h3>访问验证</h3>
-                    <p>请输入提示码以查看下载内容</p>
-                    <div class="input-group">
-                        <input type="password" id="codeInput" placeholder="请输入提示码" autocomplete="off" autofocus>
+                    <p>请输入提示码解锁下载内容</p>
+                    <div class="input-field">
+                        <input type="password" id="secretCode" placeholder="请输入提示码" autocomplete="off" autofocus>
                     </div>
-                    <button id="verifyButton" class="verify-btn">验证并显示下载项</button>
-                    <div id="modalErrorMsg" class="error-msg" style="display: none;"></div>
-                    <div class="hint-text">💡 提示码: 123456 (演示使用)</div>
+                    <button id="submitCode" class="verify-btn">验证并显示下载项</button>
+                    <div id="modalError" class="error-msg" style="display: none;"></div>
+                    <div class="hint-text">💡 演示提示码: 123456</div>
                 </div>
             `;
-            
-            document.body.appendChild(modalOverlay);
-            document.body.classList.add('modal-open');
-            
-            // 获取输入框和按钮及错误区域
-            const inputEl = document.getElementById('codeInput');
-            const verifyBtn = document.getElementById('verifyButton');
-            const errorDiv = document.getElementById('modalErrorMsg');
-            
-            // 验证函数
-            function attemptVerify() {
-                const enteredCode = inputEl.value.trim();
-                if (enteredCode === ACCESS_CODE) {
-                    // 正确：移除弹窗，显示下载网格
-                    if (modalOverlay && modalOverlay.parentNode) {
-                        modalOverlay.remove();
+
+            document.body.appendChild(modalDiv);
+            document.body.style.overflow = 'hidden';
+
+            const codeInput = document.getElementById('secretCode');
+            const verifyBtn = document.getElementById('submitCode');
+            const errorDiv = document.getElementById('modalError');
+
+            function verifyCode() {
+                const inputVal = codeInput.value.trim();
+                if (inputVal === ACCESS_CODE) {
+                    // 验证成功：关闭弹窗，显示下载列表
+                    if (modalDiv && modalDiv.parentNode) modalDiv.remove();
+                    document.body.style.overflow = '';
+                    if (listContainer) {
+                        listContainer.classList.add('active');
                     }
-                    document.body.classList.remove('modal-open');
-                    // 显示下载区域（添加active类）
-                    if (gridContainer) {
-                        gridContainer.classList.add('active');
-                    }
-                    // 可选显示一个小提示（不必要，但让体验完整）
-                    const successMsg = document.createElement('div');
-                    successMsg.innerText = '✅ 验证通过，下载列表已解锁';
-                    successMsg.style.position = 'fixed';
-                    successMsg.style.bottom = '20px';
-                    successMsg.style.left = '50%';
-                    successMsg.style.transform = 'translateX(-50%)';
-                    successMsg.style.backgroundColor = '#2b7551';
-                    successMsg.style.color = 'white';
-                    successMsg.style.padding = '0.6rem 1.4rem';
-                    successMsg.style.borderRadius = '50px';
-                    successMsg.style.fontSize = '0.85rem';
-                    successMsg.style.zIndex = '999';
-                    successMsg.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
-                    successMsg.style.fontWeight = '500';
-                    document.body.appendChild(successMsg);
+                    // 可选短暂提示
+                    const toast = document.createElement('div');
+                    toast.innerText = '✅ 验证通过，资源已解锁';
+                    toast.style.position = 'fixed';
+                    toast.style.bottom = '20px';
+                    toast.style.left = '50%';
+                    toast.style.transform = 'translateX(-50%)';
+                    toast.style.backgroundColor = '#2b7551';
+                    toast.style.color = 'white';
+                    toast.style.padding = '0.5rem 1.2rem';
+                    toast.style.borderRadius = '40px';
+                    toast.style.fontSize = '0.8rem';
+                    toast.style.zIndex = '1001';
+                    toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+                    document.body.appendChild(toast);
                     setTimeout(() => {
-                        successMsg.style.opacity = '0';
-                        setTimeout(() => successMsg.remove(), 500);
-                    }, 2000);
+                        toast.style.opacity = '0';
+                        setTimeout(() => toast.remove(), 400);
+                    }, 1800);
                 } else {
-                    // 错误：显示错误信息，不清空input但为了方便清空密码框；重新聚焦
                     errorDiv.style.display = 'block';
                     errorDiv.innerText = '❌ 提示码错误，请重试';
-                    inputEl.value = '';
-                    inputEl.focus();
-                    // 3秒后自动隐藏错误提示（但仍然保持显示直到下次输入）
+                    codeInput.value = '';
+                    codeInput.focus();
                     setTimeout(() => {
                         if (errorDiv) errorDiv.style.display = 'none';
-                    }, 2500);
+                    }, 2200);
                 }
             }
-            
-            // 绑定事件
-            verifyBtn.addEventListener('click', attemptVerify);
-            inputEl.addEventListener('keypress', (e) => {
+
+            verifyBtn.addEventListener('click', verifyCode);
+            codeInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    attemptVerify();
+                    verifyCode();
                 }
             });
         }
-        
-        // 确保页面初始时下载网格隐藏 (没有 active 类)
-        if (gridContainer) {
-            gridContainer.classList.remove('active');
+
+        // 页面初始隐藏列表
+        if (listContainer) {
+            listContainer.classList.remove('active');
         }
-        
-        // 调用弹窗（页面加载完成显示）
+
+        // 加载弹窗
         window.addEventListener('DOMContentLoaded', () => {
-            createModal();
+            createAccessModal();
         });
     })();
 </script>
