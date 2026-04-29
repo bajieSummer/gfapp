@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>安全下载中心 | 验证后可见</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f4fa 0%, #e3e9f0 100%);
+            font-family: 'Inter', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            color: #1a2c3a;
+            position: relative;
+        }
+
+        /* 主容器 */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* 头部 */
+        .page-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(120deg, #1e4663, #2b7551);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+
+        .page-header p {
+            color: #4a627a;
+            margin-top: 0.5rem;
+            font-size: 1rem;
+            border-bottom: 2px solid #cbdde9;
+            display: inline-block;
+            padding-bottom: 0.4rem;
+        }
+
+        /* 下载网格区域（初始隐藏，验证通过后显示） */
+        .download-grid {
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .download-grid.active {
+            display: grid;
+        }
+
+        /* 卡片样式 */
+        .card {
+            background: white;
+            border-radius: 1.75rem;
+            box-shadow: 0 15px 30px -12px rgba(0, 0, 0, 0.1);
+            transition: all 0.25s ease;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 40px -15px rgba(0, 0, 0, 0.2);
+            border-color: #cfdfd2;
+        }
+
+        .card-content {
+            padding: 1.8rem 1.8rem 1rem 1.8rem;
+            flex: 1;
+        }
+
+        .file-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: #eef2f6;
+            padding: 0.25rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #2d5f45;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: #1f3b4a;
+            line-height: 1.3;
+        }
+
+        .description {
+            color: #3e5a6b;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            margin: 0.6rem 0 1rem 0;
+            border-left: 3px solid #40916c;
+            padding-left: 0.9rem;
+            background: #fafefb;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .file-meta {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #50755b;
+            background: #f3f8f0;
+            padding: 0.5rem 0.8rem;
+            border-radius: 1rem;
+            margin-top: 1rem;
+            font-weight: 500;
+        }
+
+        .file-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .download-area {
+            padding: 0.2rem 1.8rem 1.8rem 1.8rem;
+        }
+
+        .download-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            background: white;
+            border: 2px solid #cfe4d6;
+            border-radius: 60px;
+            padding: 0.8rem 1rem;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #236e4a;
+            text-decoration: none;
+            transition: 0.2s;
+            text-align: center;
+            width: 100%;
+        }
+
+        .download-btn:hover {
+            background: #2b7551;
+            border-color: #2b7551;
+            color: white;
+            box-shadow: 0 8px 18px -6px rgba(43, 117, 81, 0.4);
+            transform: scale(1.02);
+        }
+
+        .download-btn:active {
+            transform: scale(0.98);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            color: #6f8fa0;
+            font-size: 0.8rem;
+            border-top: 1px solid #cbdde9;
+        }
+
+        /* 自定义弹窗 (模态框) 样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: all 0.2s ease;
+        }
+
+        .modal-card {
+            background: white;
+            max-width: 420px;
+            width: 90%;
+            border-radius: 2rem;
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.3);
+            padding: 2rem 1.8rem 2rem 1.8rem;
+            text-align: center;
+            animation: fadeSlideUp 0.25s ease-out;
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-card h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #1f4e6f, #2b7551);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .modal-card p {
+            color: #5a6f82;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e2edf2;
+            display: inline-block;
+            padding-bottom: 0.3rem;
+        }
+
+        .input-group {
+            margin: 1.5rem 0 1rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            font-size: 1rem;
+            border: 2px solid #dce9f0;
+            border-radius: 60px;
+            outline: none;
+            transition: 0.2s;
+            font-family: monospace;
+            letter-spacing: 1px;
+            text-align: center;
+            background: #fefefe;
+        }
+
+        .input-group input:focus {
+            border-color: #2b7551;
+            box-shadow: 0 0 0 3px rgba(43, 117, 81, 0.2);
+        }
+
+        .verify-btn {
+            background: #2b7551;
+            color: white;
+            border: none;
+            padding: 0.85rem 1.5rem;
+            width: 100%;
+            border-radius: 60px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .verify-btn:hover {
+            background: #1e5e41;
+            transform: scale(0.98);
+        }
+
+        .error-msg {
+            color: #c7362b;
+            font-size: 0.8rem;
+            margin-top: 0.8rem;
+            background: #ffe9e7;
+            padding: 0.4rem;
+            border-radius: 40px;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .hint-text {
+            margin-top: 1rem;
+            font-size: 0.7rem;
+            background: #f0f5f2;
+            padding: 0.3rem;
+            border-radius: 40px;
+            color: #2f6b4a;
+        }
+
+        /* 验证通过后移除滚动锁定 */
+        body.modal-open {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="page-header">
+        <h1>🔐 安全下载中心</h1>
+        <p>请通过验证后查看下载资源</p>
+    </div>
+
+    <!-- 下载列表区域：初始隐藏，验证通过后显示 -->
+    <div id="downloadGrid" class="download-grid">
+        <!-- 卡片 1: 5MB 测试压缩包 -->
+        <div class="card">
+            <div class="card-content">
+                <div class="file-badge">
+                    📦 压缩包 · ZIP
+                </div>
+                <div class="card-title">性能测试样本包</div>
+                <div class="description">
+                    包含网络诊断与带宽测试数据，适合压测场景。
+                </div>
+                <div class="file-meta">
+                    <span>🔹 大小: 5 MB</span>
+                    <span>📁 格式: .zip</span>
+                </div>
+            </div>
+            <div class="download-area">
+                <a class="download-btn" href="http://ipv4.download.thinkbroadband.com/5MB.zip" download>
+                    <span class="download-icon">⬇️</span>
+                    <span>下载文件</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- 卡片 2: 10MB 二进制测试文件 -->
+        <div class="card">
+            <div class="card-content">
+                <div class="file-badge">
+                    🧪 二进制数据 · BIN
+                </div>
+                <div class="card-title">大文件负载示例</div>
+                <div class="description">
+                    10MB 随机填充数据，用于传输速度或存储测试。
+                </div>
+                <div class="file-meta">
+                    <span>🔹 大小: 10 MB</span>
+                    <span>📁 格式: .bin</span>
+                </div>
+            </div>
+            <div class="download-area">
+                <a class="download-btn" href="http://ipv4.download.thinkbroadband.com/10MB.bin" download>
+                    <span class="download-icon">⬇️</span>
+                    <span>下载文件</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- 卡片 3: PDF 示例文档 -->
+        <div class="card">
+            <div class="card-content">
+                <div class="file-badge">
+                    📄 文档 · PDF
+                </div>
+                <div class="card-title">技术白皮书（草案）</div>
+                <div class="description">
+                    最新架构设计说明与性能测试报告，完整版共 28 页。
+                </div>
+                <div class="file-meta">
+                    <span>🔹 大小: 1.4 MB</span>
+                    <span>📁 格式: .pdf</span>
+                </div>
+            </div>
+            <div class="download-area">
+                <a class="download-btn" href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" download>
+                    <span class="download-icon">⬇️</span>
+                    <span>下载文件</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        ⚡ 所有资源均为正式大文件链接，点击即下载 | 需验证后可见
+    </footer>
+</div>
+
+<script>
+    (function() {
+        // 预设验证码
+        const ACCESS_CODE = "123456";
+        // 下载网格元素
+        const gridContainer = document.getElementById("downloadGrid");
+        
+        // 创建弹窗结构
+        function createModal() {
+            const modalOverlay = document.createElement('div');
+            modalOverlay.className = 'modal-overlay';
+            modalOverlay.id = 'accessModal';
+            
+            modalOverlay.innerHTML = `
+                <div class="modal-card">
+                    <div class="modal-icon">🔒</div>
+                    <h3>访问验证</h3>
+                    <p>请输入提示码以查看下载内容</p>
+                    <div class="input-group">
+                        <input type="password" id="codeInput" placeholder="请输入提示码" autocomplete="off" autofocus>
+                    </div>
+                    <button id="verifyButton" class="verify-btn">验证并显示下载项</button>
+                    <div id="modalErrorMsg" class="error-msg" style="display: none;"></div>
+                    <div class="hint-text">💡 提示码: 123456 (演示使用)</div>
+                </div>
+            `;
+            
+            document.body.appendChild(modalOverlay);
+            document.body.classList.add('modal-open');
+            
+            // 获取输入框和按钮及错误区域
+            const inputEl = document.getElementById('codeInput');
+            const verifyBtn = document.getElementById('verifyButton');
+            const errorDiv = document.getElementById('modalErrorMsg');
+            
+            // 验证函数
+            function attemptVerify() {
+                const enteredCode = inputEl.value.trim();
+                if (enteredCode === ACCESS_CODE) {
+                    // 正确：移除弹窗，显示下载网格
+                    if (modalOverlay && modalOverlay.parentNode) {
+                        modalOverlay.remove();
+                    }
+                    document.body.classList.remove('modal-open');
+                    // 显示下载区域（添加active类）
+                    if (gridContainer) {
+                        gridContainer.classList.add('active');
+                    }
+                    // 可选显示一个小提示（不必要，但让体验完整）
+                    const successMsg = document.createElement('div');
+                    successMsg.innerText = '✅ 验证通过，下载列表已解锁';
+                    successMsg.style.position = 'fixed';
+                    successMsg.style.bottom = '20px';
+                    successMsg.style.left = '50%';
+                    successMsg.style.transform = 'translateX(-50%)';
+                    successMsg.style.backgroundColor = '#2b7551';
+                    successMsg.style.color = 'white';
+                    successMsg.style.padding = '0.6rem 1.4rem';
+                    successMsg.style.borderRadius = '50px';
+                    successMsg.style.fontSize = '0.85rem';
+                    successMsg.style.zIndex = '999';
+                    successMsg.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+                    successMsg.style.fontWeight = '500';
+                    document.body.appendChild(successMsg);
+                    setTimeout(() => {
+                        successMsg.style.opacity = '0';
+                        setTimeout(() => successMsg.remove(), 500);
+                    }, 2000);
+                } else {
+                    // 错误：显示错误信息，不清空input但为了方便清空密码框；重新聚焦
+                    errorDiv.style.display = 'block';
+                    errorDiv.innerText = '❌ 提示码错误，请重试';
+                    inputEl.value = '';
+                    inputEl.focus();
+                    // 3秒后自动隐藏错误提示（但仍然保持显示直到下次输入）
+                    setTimeout(() => {
+                        if (errorDiv) errorDiv.style.display = 'none';
+                    }, 2500);
+                }
+            }
+            
+            // 绑定事件
+            verifyBtn.addEventListener('click', attemptVerify);
+            inputEl.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    attemptVerify();
+                }
+            });
+        }
+        
+        // 确保页面初始时下载网格隐藏 (没有 active 类)
+        if (gridContainer) {
+            gridContainer.classList.remove('active');
+        }
+        
+        // 调用弹窗（页面加载完成显示）
+        window.addEventListener('DOMContentLoaded', () => {
+            createModal();
+        });
+    })();
+</script>
+</body>
+</html>
