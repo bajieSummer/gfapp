@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: DeployGF2Pages
 
 on:
   push:
