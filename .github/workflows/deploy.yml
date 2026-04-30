@@ -2,8 +2,8 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["main"]   # 如果你的默认分支是 master，改成 "master"
-  workflow_dispatch:     # 允许手动触发
+    branches: ["main"]   # 如果你的默认分支是 master，请改成 "master"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -14,24 +14,25 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Install Git LFS
+        run: sudo apt-get update && sudo apt-get install git-lfs
+
       - name: Checkout repository with LFS
         uses: actions/checkout@v4
         with:
-          lfs: true          # 关键：拉取真实的大文件
+          lfs: true
+
+      - name: Force pull LFS files (replace pointers)
+        run: git lfs pull
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Build site
-        run: |
-          # 你的网站文件已经在根目录，直接准备部署
-          mkdir -p _site
-          cp -r ./* ./_site/   # 把所有文件（包括 bigfile1, bigfile2）复制到输出目录
-
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./_site
+          # 直接将整个仓库根目录作为部署内容，无需复制到 _site
+          path: .
 
   deploy:
     environment:
